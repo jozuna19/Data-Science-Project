@@ -1,0 +1,103 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('Pokemon.csv')
+
+df.dropna(inplace=True)
+print(len(df.index))
+
+print(df.iloc[:300,:10])
+
+# Select the HP and Attack columns and calculate their statistics
+hp_mean = df['hp'].mean()
+hp_median = df['hp'].median()
+hp_var = df['hp'].var()
+hp_std = df['hp'].std()
+
+attack_mean = df['attack'].mean()
+attack_median = df['attack'].median()
+attack_var = df['attack'].var()
+attack_std = df['attack'].std()
+
+# Print the results
+# ":.2f" makes it so the number prints with only 2 decimal places
+print("HP Stats:")
+print(f"Mean: {hp_mean:.2f}")
+print(f"Median: {hp_median:.2f}")
+print(f"Variance: {hp_var:.2f}")
+print(f"Standard deviation: {hp_std:.2f}")
+print("")
+
+print("Attack Stats:")
+print(f"Mean: {attack_mean:.2f}")
+print(f"Median: {attack_median:.2f}")
+print(f"Variance: {attack_var:.2f}")
+print(f"Standard deviation: {attack_std:.2f}")
+
+# Making hp-attack scatter chart
+hp_values = df.iloc[:, 5]
+attack_values = df.iloc[:, 6]
+plt.figure(figsize=(10, 7))
+plt.scatter(hp_values, attack_values, color = 'b')
+
+plt.xlabel('HP values')
+plt.ylabel('Attack values')
+plt.title("HP - Attack values of Pokemon")
+
+a, b = np.polyfit(hp_values, attack_values, 1)
+plt.plot(hp_values, a*hp_values+b, color='r', linestyle='--', linewidth=2)
+
+plt.show()
+print("According to the data chart, a pokemon's HP value is directly proportional to its Attack value.")
+print("Meaning , as Hp value increases, Attack value generally also increases.")
+
+# Histogram of total values
+bins = [80, 160, 240, 320, 400, 480, 560, 640, 720, 800, 880, 960, 1040, 1120, 1200]
+total_values = df.iloc[:, 4]
+plt.hist(total_values, rwidth= 0.9, bins = bins)
+
+plt.xlabel('Total Value of Pokemon')
+plt.ylabel('# of Pokemon')
+plt.title("Total Value of Pokemon Histogram")
+
+print('Most pokemon have a total value around 300 to 700, with a small outlier around 1100.')
+
+# Comparing the mean total values of different type1
+types_grouped = df.groupby('type1')
+
+grass_t = float(types_grouped.get_group('Grass').agg({'total':np.mean}))
+fire_t = float(types_grouped.get_group('Fire').agg({'total':np.mean}))
+normal_t = float(types_grouped.get_group('Normal').agg({'total':np.mean}))
+water_t = float(types_grouped.get_group('Water').agg({'total':np.mean}))
+electric_t = float(types_grouped.get_group('Electric').agg({'total':np.mean}))
+
+total_data = {'Grass': grass_t, 'Fire': fire_t, 'Normal': normal_t, 'Water': water_t, 'Electric': electric_t} 
+types = list(total_data.keys())
+type_totals = list(total_data.values())
+
+plt.bar(types, type_totals, color = 'mediumpurple')
+ 
+plt.xlabel("1st Types")
+plt.ylabel("Total values")
+plt.title("Total Values of Different First Types")
+plt.show()
+print("Fire types, on average, have more total values than grass, water, normal, or electric types.")
+
+# Pie chart of types
+poke_colors = ['forestgreen', 'darkorange','wheat', 'gold', 'cornflowerblue']
+
+grass_amt = len(types_grouped.get_group('Grass'))
+fire_amt = len(types_grouped.get_group('Fire'))
+water_amt = len(types_grouped.get_group('Water'))
+normal_amt = len(types_grouped.get_group('Normal'))
+electric_amt = len(types_grouped.get_group('Electric'))
+
+amt_data = {'Grass': grass_amt,'Fire': fire_amt,'Normal': normal_amt,'Electric': electric_amt,'Water': water_amt}
+types = list(amt_data.keys())
+type_amt = list(amt_data.values())
+
+plt.title("Share of Pokemon by Type")
+plt.pie(type_amt, labels = types, autopct='%1.1f%%', colors= poke_colors)
+plt.show()
+print("Out of 5 popular types, water types are the plurality of a pokemon.")
